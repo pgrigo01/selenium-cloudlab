@@ -21,57 +21,60 @@ with open("credentials.txt", "r") as f:
     lines = f.readlines()
     USERNAME = lines[0].strip()
     PASSWORD = lines[1].strip()
-    
+
 try:
-    # Find username and password input fields (update the selectors if needed)
+    # 1) Log in
     username_field = wait.until(EC.presence_of_element_located((By.NAME, "uid")))
     password_field = wait.until(EC.presence_of_element_located((By.NAME, "password")))
-
-    # Type the credentials
     username_field.send_keys(USERNAME)
     password_field.send_keys(PASSWORD)
 
-    # Locate and click the login button using its ID
     login_button = wait.until(EC.element_to_be_clickable((By.ID, "quickvm_login_modal_button")))
     login_button.click()
-
     print("Login successful!")
 
-    # Wait for the Experiments tab to be clickable
+    # 2) Navigate to Experiments tab
     experiments_tab = wait.until(EC.element_to_be_clickable((By.ID, "usertab-experiments")))
     experiments_tab.click()
-
     print("Navigated to Experiments tab")
 
-    # Wait for the experiment table to load
+    # 3) Wait for the table to load
     time.sleep(3)
 
-    # Locate the experiment table
+    # 4) Locate the table (adjust selector as needed)
     experiment_table = wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
 
-    # Extract all rows
+    # 5) Extract rows
     rows = experiment_table.find_elements(By.TAG_NAME, "tr")
 
-    # Extract column headers
+    # 6) Extract headers from the first row
     headers = [header.text for header in rows[0].find_elements(By.TAG_NAME, "th")]
+    print("Extracted headers:", headers)
 
-    # Store experiment data
+    # 7) Gather table data from subsequent rows
     experiments_data = []
-    for row in rows[1:]:  # Skip the header row
+    for row in rows[1:]:
         columns = row.find_elements(By.TAG_NAME, "td")
         experiments_data.append([col.text for col in columns])
 
-    # Convert to a Pandas DataFrame
+    # 8) Convert to DataFrame
     df = pd.DataFrame(experiments_data, columns=headers)
 
-    # Save to CSV file
+    # 9) Filter rows to keep ONLY those where "Profile" == "terraform-profile"
+    #    (Change "terraform-profile" to match the exact profile name you want.)
+    if "Profile" in df.columns:
+        df = df[df["Profile"] == "terraform-profile"]
+    else:
+        print("No 'Profile' column found; cannot filter by terraform profile.")
+        df = df.iloc[0:0]  # make it empty if you prefer
+
+    # 10) Save filtered DataFrame to CSV
     df.to_csv("cloudlab_experiments.csv", index=False)
-    print("Experiment data saved to 'cloudlab_experiments.csv'")
+    print("Filtered data saved to 'cloudlab_experiments.csv'")
 
 except Exception as e:
     print("Error:", e)
 
 finally:
-    # Keep browser open for debugging, or close it after a few seconds
-    time.sleep(10)
+    time.sleep(5)
     driver.quit()
