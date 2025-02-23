@@ -1,1 +1,3 @@
-Name,Profile,Creator,Project,Status,Cluster,PCs,PHours[1],VMs,Created,Expires,
+Name,Profile,Project,Status,Cluster,PCs,PHours[1],VMs,Created,Expires,
+pgrigo01-242916,multi-node-cluster,UCY-CS499-DC,ready,Emulab,1,9.04,0,"Feb 22, 2025","Feb 23, 2025",
+pgrigo01-242937,multi-node-cluster,UCY-CS499-DC,ready,Utah,1,3.37,0,"Feb 22, 2025","Feb 23, 2025",
