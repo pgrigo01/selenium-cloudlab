@@ -60,13 +60,12 @@ try:
     # 8) Convert to DataFrame
     df = pd.DataFrame(experiments_data, columns=headers)
 
-    # 9) Filter rows to keep ONLY those where "Profile" == "terraform-profile"
-    #    (Change "terraform-profile" to match the exact profile name you want.)
-#    if "Profile" in df.columns:
-#       df = df[df["Profile"] == "terraform-profile"]
-#    else:
-#        print("No 'Profile' column found; cannot filter by terraform profile.")
-#        df = df.iloc[0:0]  # make it empty if you prefer
+    # 9) Filter rows to keep ONLY those where "Creator" == your username (pgrigo01)
+    if "Creator" in df.columns:
+        df = df[df["Creator"] == USERNAME]
+    else:
+        print("No 'Creator' column found; cannot filter by username.")
+    
 
     # 10) Save filtered DataFrame to CSV
     df.to_csv("cloudlab_experiments.csv", index=False)
