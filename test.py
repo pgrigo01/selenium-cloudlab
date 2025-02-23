@@ -100,7 +100,7 @@ try:
             print("Expiration text found:", expiration_text)
 
             # Save that to another file
-            with open("managementNodeDuration.txt", "w") as f:
+            with open("managementNodeDuration", "w") as f:
                 f.write(expiration_text + "\n")
 
             print("Saved management node expiration to 'managementNodeDuration'")
