@@ -23,11 +23,13 @@ if os.path.exists("credentials.txt"):
         USERNAME = lines[0].strip()
         PASSWORD = lines[1].strip()
 else:
+    
     # Prompt the user to enter their credentials
     USERNAME = input("Enter your username: ")
     # Using getpass hides the password input
     PASSWORD = getpass.getpass("Enter your password: ")
-
+    
+time.sleep(5)
 try:
     # 1) Log in
     username_field = wait.until(EC.presence_of_element_located((By.NAME, "uid")))
