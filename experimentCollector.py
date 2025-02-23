@@ -1,3 +1,5 @@
+import os
+import getpass
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -14,10 +16,17 @@ driver = webdriver.Chrome(service=service)
 driver.get("https://www.cloudlab.us/login.php")
 wait = WebDriverWait(driver, 10)
 
-with open("credentials.txt", "r") as f:
-    lines = f.readlines()
-    USERNAME = lines[0].strip()
-    PASSWORD = lines[1].strip()
+# Check if credentials.txt exists
+if os.path.exists("credentials.txt"):
+    with open("credentials.txt", "r") as f:
+        lines = f.readlines()
+        USERNAME = lines[0].strip()
+        PASSWORD = lines[1].strip()
+else:
+    # Prompt the user to enter their credentials
+    USERNAME = input("Enter your username: ")
+    # Using getpass hides the password input
+    PASSWORD = getpass.getpass("Enter your password: ")
 
 try:
     # 1) Log in
