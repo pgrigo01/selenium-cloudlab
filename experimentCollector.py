@@ -15,7 +15,8 @@ driver = webdriver.Chrome(service=service)
 
 driver.get("https://www.cloudlab.us/login.php")
 wait = WebDriverWait(driver, 10)
-
+USERNAME = ""
+PASSWORD = ""
 # Check if credentials.txt exists
 if os.path.exists("credentials.txt"):
     with open("credentials.txt", "r") as f:
@@ -23,13 +24,13 @@ if os.path.exists("credentials.txt"):
         USERNAME = lines[0].strip()
         PASSWORD = lines[1].strip()
 else:
+    while USERNAME == "" or PASSWORD == "":  
+        # Prompt the user to enter their credentials
+        USERNAME = input("Enter your username: ")
+        # Using getpass hides the password input
+        PASSWORD = getpass.getpass("Enter your password: ")
     
-    # Prompt the user to enter their credentials
-    USERNAME = input("Enter your username: ")
-    # Using getpass hides the password input
-    PASSWORD = getpass.getpass("Enter your password: ")
-    
-time.sleep(5)
+
 try:
     # 1) Log in
     username_field = wait.until(EC.presence_of_element_located((By.NAME, "uid")))
