@@ -1,1 +1,2 @@
-Name,Profile,Creator,Project,Status,Cluster,PCs,PHours[1],VMs,Created,Expires,
+Name,Profile,Project,Status,Cluster,PCs,PHours[1],VMs,Created,Expires,
+management-node,multi-node-cluster,UCY-CS499-DC,provisioned,Clem,1,0.08,0,"Feb 23, 2025","Feb 24, 2025",
