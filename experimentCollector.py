@@ -1,62 +1,62 @@
 import os
 import getpass
+import time
+import pandas as pd
+import tempfile
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import pandas as pd
-import time
+from webdriver_manager.chrome import ChromeDriverManager
 
 # -------------------------------
-# Setup WebDriver for Selenium
+# Setup Chrome options with a unique user data directory
 # -------------------------------
+options = webdriver.ChromeOptions()
+# Create a temporary directory for user data to avoid conflicts
+temp_user_data = tempfile.mkdtemp()
+options.add_argument(f"--user-data-dir={temp_user_data}")
 
-# Path to the chromedriver executable; adjust this path if necessary.
-chromedriver_path = "/usr/bin/chromedriver"
-service = Service(chromedriver_path)
-driver = webdriver.Chrome(service=service)
+# These options help with headless/server environments
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--headless")  # Remove if you need to see the browser
+options.add_argument("--disable-gpu")
+
+# Initialize the ChromeDriver service using webdriver_manager
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service, options=options)
 
 # Open the CloudLab login page.
 driver.get("https://www.cloudlab.us/login.php")
-# Initialize an explicit wait with a timeout of 10 seconds.
 wait = WebDriverWait(driver, 10)
 
 # -------------------------------
 # Retrieve Credentials
 # -------------------------------
-
-# The script checks for a file named 'credentials.txt' in the current directory.
-# This file is expected to contain the username on the first line and the password on the second line.
-# Using this file allows you to store credentials securely and avoid manually entering them every time.
-# If the file does not exist, the script will prompt you to enter your credentials manually.
 USERNAME = ""
 PASSWORD = ""
 
 if os.path.exists("credentials.txt"):
-    # Read credentials from the file if it exists.
     with open("credentials.txt", "r") as f:
         lines = f.readlines()
         USERNAME = lines[0].strip()  # First line: username
         PASSWORD = lines[1].strip()  # Second line: password
 else:
-    # If the file is not found, repeatedly prompt the user until valid credentials are provided.
     while USERNAME == "" or PASSWORD == "":
         USERNAME = input("Enter your username: ")
-        # Using getpass.getpass hides the password input for security.
         PASSWORD = getpass.getpass("Enter your password: ")
 
 # -------------------------------
 # Main Script: Logging In and Data Extraction
 # -------------------------------
 try:
-    # 1) Log in to CloudLab by locating the username and password input fields.
+    # 1) Log in to CloudLab
     username_field = wait.until(EC.presence_of_element_located((By.NAME, "uid")))
     password_field = wait.until(EC.presence_of_element_located((By.NAME, "password")))
     username_field.send_keys(USERNAME)
     password_field.send_keys(PASSWORD)
-
-    # Locate and click the login button.
     login_button = wait.until(EC.element_to_be_clickable((By.ID, "quickvm_login_modal_button")))
     login_button.click()
     print("Login successful!")
@@ -75,29 +75,26 @@ try:
     headers = [th.text for th in rows[0].find_elements(By.TAG_NAME, "th")]
     print("Extracted headers:", headers)
 
-    # 5) Gather data from each row of the table (skipping the header row).
+    # 5) Gather data from each row of the table.
     experiments_data = []
     for row in rows[1:]:
         cols = row.find_elements(By.TAG_NAME, "td")
         experiments_data.append([c.text for c in cols])
 
-    # 6) Convert the gathered data into a Pandas DataFrame with the headers as columns.
+    # 6) Convert the data into a DataFrame.
     df = pd.DataFrame(experiments_data, columns=headers)
 
-    # 7) If a "Creator" column exists, filter the DataFrame to include only rows
-    # where the creator matches the username used for login.
+    # 7) Filter rows by creator if possible.
     if "Creator" in df.columns:
         df = df[df["Creator"] == USERNAME]
     else:
         print("No 'Creator' column found; skipping user-based filtering.")
 
-    # 8) Save the DataFrame to a CSV file named 'cloudlab_experiments.csv'.
+    # 8) Save the DataFrame to a CSV file.
     df.to_csv("cloudlab_experiments.csv", index=False)
     print("Data saved to 'cloudlab_experiments.csv'")
 
-    # ----------------------------------------------------------------
     # 9) Locate and click the experiment named "management-node"
-    # ----------------------------------------------------------------
     rows = experiment_table.find_elements(By.TAG_NAME, "tr")
     management_node_link = None
     for row in rows[1:]:
@@ -106,10 +103,8 @@ try:
             name_text = cols[0].text.strip().lower()
             if name_text == "management-node":
                 try:
-                    # If there is a clickable link inside the cell, use it.
                     management_node_link = cols[0].find_element(By.TAG_NAME, "a")
-                except:
-                    # Otherwise, treat the entire row as clickable.
+                except Exception:
                     management_node_link = row
                 break
 
@@ -118,35 +113,26 @@ try:
         print("Clicked on 'management-node' experiment. Navigating to details page...")
 
         try:
-            # Wait until the expiration element (with ID "quickvm_expires") is present.
             expiration_element = wait.until(
                 EC.presence_of_element_located((By.ID, "quickvm_expires"))
             )
-            
-            # Additional wait until the expiration element's text is non-empty.
             WebDriverWait(driver, 10).until(
                 lambda d: expiration_element.text.strip() != ""
             )
-
             expiration_text = expiration_element.text.strip()
             print("Expiration text found:", expiration_text)
 
-            # Save the expiration text to 'managementNodeDuration.txt'
             with open("managementNodeDuration.txt", "w") as f:
                 f.write(expiration_text + "\n")
-
             print("Saved management node expiration to 'managementNodeDuration.txt'")
-
         except Exception as ex:
             print("Could not locate the expiration element or text is empty:", ex)
     else:
         print("No row found with name 'management-node'.")
 
 except Exception as e:
-    # Handle any exceptions that occur during the process.
     print("Error:", e)
 
 finally:
-    # Pause briefly before closing the browser to allow any final actions to complete.
     time.sleep(5)
     driver.quit()
