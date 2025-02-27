@@ -17,4 +17,5 @@ rm google-chrome.deb
 
 # Install necessary Python packages
 pip3 install selenium pandas webdriver-manager
-sudo apt install chromedriver
+
+pip install webdriver_manager
