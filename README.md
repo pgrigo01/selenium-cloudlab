@@ -60,3 +60,23 @@ Once your credentials are ready and you have activated the virtual environment (
    HTTPS: All login information is transmitted via HTTPS to CloudLab.
 
    Temporary Data: Selenium creates a temporary user data directory for Chrome. This directory is generally removed after the script completes.
+
+   
+5. ** Example run it takes some time to login please wait for a bit after running this script**
+         
+         (myenv) pg@LAPTOP-B27VJ0EA:~/selenium-cloudlab$ source make.sh
+         (myenv) pg@LAPTOP-B27VJ0EA:~/selenium-cloudlab$ python experimentCollector.py 
+         
+         Enter your username: pgrigo01
+         Enter your password: 
+         Login successful!
+         Navigated to Experiments tab
+         Extracted headers: ['Name', 'Profile', 'Project', 'Status', 'Cluster', 'PCs', 'PHours[1]', 'VMs', 'Created', 'Expires', '']
+         No 'Creator' column found; skipping user-based filtering.
+         Data saved to 'cloudlab_experiments.csv'
+         No row found with name 'management-node'.
+         
+         (myenv) pg@LAPTOP-B27VJ0EA:~/selenium-cloudlab$ cat cloudlab_experiments.csv 
+         Name,Profile,Project,Status,Cluster,PCs,PHours[1],VMs,Created,Expires,
+         testSelenium,multi-node-cluster,UCY-CS499-DC,ready,Emulab,1,2.16,0,"Mar 4, 2025","Mar 5, 2025",
+
